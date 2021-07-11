@@ -8,6 +8,8 @@ html {
 
 body {
   background: linear-gradient(135deg, rgb(31, 31, 31) 25%, rgb(14, 14, 14)); 
+  height: 100vh;
+  margin: 0px;
   display: flex; 
   align-items: center; 
   justify-content: center;

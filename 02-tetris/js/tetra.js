@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 
 const canvasColors = {
   background: '#2d2838',
+  backgroundCell: '#231921',
   border: '6px solid #595267'
 };
 
@@ -15,8 +16,8 @@ const keyboard = {
 
 const cellSize = 32;
 
-const widthCells = 16;
-const heightCells = 16;
+const widthCells = 10;
+const heightCells = 20;
 
 const canvasWidth = widthCells * cellSize;
 const canvasHeight = heightCells * cellSize;
@@ -98,18 +99,15 @@ const random = (min, max) => {
 
 // создаём последовательность фигур, которая появится в игре
 const tetrominoGenerate = () => {
-  while (sequences.length) {
-    const rand = random(0, sequences.length - 1);
-    const name = sequences.splice(rand, 1)[0];
-    tetrominoSequences.push(name);
-  }
+  const rand = random(0, sequences.length);
+  const name = sequences[rand];
+  tetrominoSequences.push(name);
 };
 
 /* Get next tatramino */
 const tetrominoNext = () => {
-  if (tetrominoSequences.length <= 0) {
-    tetrominoGenerate();
-  }
+  if (gameOver) return;
+  tetrominoGenerate();
 
   const name = tetrominoSequences.pop();
   const matrix = tetrominos[name];
@@ -133,20 +131,13 @@ const tetrominoCanMove = (matrix, cellY, cellX) => {
   let res = true;
   matrix.forEach((y, Yi) => {
     y.forEach((x, Xi) => {
-      console.log(`(${cellY}, ${cellX})`);
-      try {
-        const cond = x === 1 && (cellX + Xi < 0 ||
-          cellX + Xi >= field[Yi].length ||
-          cellY + Yi >= field.length ||
-          field[cellY + Yi][cellX + Xi] !== 0);
-        if (cond) {
-          console.log('Collision');
-          res = false;
-        }
-      } catch(e) {
-        console.error(e);
+      const cond = x === 1 && (cellX + Xi < 0 ||
+        cellX + Xi >= field[Yi].length ||
+        cellY + Yi >= field.length ||
+        field[cellY + Yi][cellX + Xi] !== 0);
+      if (cond) {
+        res = false;
       }
-
     });
   });
 
@@ -154,7 +145,33 @@ const tetrominoCanMove = (matrix, cellY, cellX) => {
 };
 
 const tetrominoPlace = () => {
+  tetromino.matrix.forEach((y, Yi) => {
+    y.forEach((x, Xi) => {
+      if (x === 1) {
+        if (tetromino.y + Yi < 0) {
+          return showGameOver();
+        }
+        field[tetromino.y + Yi][tetromino.x + Xi] = tetromino.name;
+      }
+    });
+  });
   tetromino = tetrominoNext();
+
+  tetromnioTryClearRaw();
+};
+
+const tetromnioTryClearRaw = () => {
+  field.forEach((y, Yi) => {
+    if (y.every(cell => !!cell)) {
+      for (let r = Yi; r >= 0; r--) {
+        for (let c = 0; c < field[r].length; c++) {
+          field[r][c] = field[r - 1][c];
+        }
+      }
+    } else {
+      Yi--;
+    }
+  });
 };
 
 let score = 0;
@@ -162,15 +179,34 @@ let count = 0;
 let gameOver = false;
 let tetromino = tetrominoNext();
 
+// показываем надпись Game Over
+const showGameOver = () => {
+  gameOver = true;
+
+  window.cancelAnimationFrame(raf);
+
+  ctx.fillStyle = 'black';
+  ctx.globalAlpha = 0.75;
+  ctx.fillRect(0, canvas.height / 2 - 30, canvas.width, 60);
+
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = 'white';
+  ctx.font = '36px monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('GAME OVER!', canvas.width / 2, canvas.height / 2);
+};
+
 const update = () => {
+  if (gameOver) return showGameOver();
+
   window.requestAnimationFrame(update);
 
   if (tetromino) {
-    if (++count > 35) {
+    if (++count > 16) {
       if (tetrominoCanMove(tetromino.matrix, tetromino.y + 1, tetromino.x)) {
         tetromino.y += 1;
       } else {
-        //tetromino.y -= 1;
         tetrominoPlace();
       }
       count = 0;
@@ -186,11 +222,11 @@ const draw = () => {
   field.forEach((y, Yi) => {
     y.forEach((x, Xi) => {
       if (x !== 0) {
-        const name = x;
-
-        ctx.fillStyle = tetrominosColors[name];
-        ctx.fillRect(Xi * cellSize, Yi * cellSize, cellSize - 1, cellSize - 1);
+        ctx.fillStyle = tetrominosColors[x];
+      } else {
+        ctx.fillStyle = canvasColors.backgroundCell;
       }
+      ctx.fillRect(Xi * cellSize, Yi * cellSize, cellSize - 1, cellSize - 1);
     });
   });
 
@@ -242,4 +278,4 @@ document.addEventListener('keydown', function (e) {
   }
 });
 
-window.requestAnimationFrame(update);
+const raf = window.requestAnimationFrame(update);

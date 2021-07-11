@@ -1,0 +1,22 @@
+:root {
+  --canvas-color: rgb(50, 50, 50);
+  --canvas-color-border: rgb(160, 160, 160);
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+canvas {
+  background: var(--canvas-color);
+  border: 32px solid var(--canvas-color-border);
+}
