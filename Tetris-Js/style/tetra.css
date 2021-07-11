@@ -1,0 +1,18 @@
+:root {
+
+}
+
+html {
+
+}
+
+body {
+  background: linear-gradient(135deg, rgb(31, 31, 31) 25%, rgb(14, 14, 14)); 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+}
+
+canvas {
+
+}
