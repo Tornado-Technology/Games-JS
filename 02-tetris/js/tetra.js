@@ -16,7 +16,7 @@ const keyboard = {
 const cellSize = 32;
 
 const widthCells = 16;
-const heightCells = 32;
+const heightCells = 16;
 
 const canvasWidth = widthCells * cellSize;
 const canvasHeight = heightCells * cellSize;
@@ -114,7 +114,7 @@ const tetrominoNext = () => {
   const name = tetrominoSequences.pop();
   const matrix = tetrominos[name];
   const x = field[0].length / 2 - Math.ceil(matrix[0].length / 2);
-  const y = name === 'I' ? -1 : -2;
+  const y = -1;
 
   return {
     name: name,
@@ -133,16 +133,20 @@ const tetrominoCanMove = (matrix, cellY, cellX) => {
   let res = true;
   matrix.forEach((y, Yi) => {
     y.forEach((x, Xi) => {
-      if (
-        x === 1 && (cellX + Xi < 0 ||
+      console.log(`(${cellY}, ${cellX})`);
+      try {
+        const cond = x === 1 && (cellX + Xi < 0 ||
           cellX + Xi >= field[Yi].length ||
           cellY + Yi >= field.length ||
-          field[cellY + Yi][cellX + Xi] !== 0
-        )
-      ) {
-        console.log('Colision');
-        res = false;
+          field[cellY + Yi][cellX + Xi] !== 0);
+        if (cond) {
+          console.log('Collision');
+          res = false;
+        }
+      } catch(e) {
+        console.error(e);
       }
+
     });
   });
 
@@ -150,7 +154,7 @@ const tetrominoCanMove = (matrix, cellY, cellX) => {
 };
 
 const tetrominoPlace = () => {
-  // tetromino = tetrominoNext();
+  tetromino = tetrominoNext();
 };
 
 let score = 0;
@@ -166,7 +170,7 @@ const update = () => {
       if (tetrominoCanMove(tetromino.matrix, tetromino.y + 1, tetromino.x)) {
         tetromino.y += 1;
       } else {
-        tetromino.y -= 1;
+        //tetromino.y -= 1;
         tetrominoPlace();
       }
       count = 0;
